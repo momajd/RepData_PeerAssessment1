@@ -1,19 +1,16 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 activityData <- read.csv("activity.csv", stringsAsFactors = FALSE)
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 stepsByDay <- aggregate(steps ~ date, data = activityData, FUN = sum)
 stepsByDay$day <- 1:nrow(stepsByDay)
 
@@ -21,20 +18,21 @@ library(ggplot2)
 g <- ggplot(stepsByDay, aes(day))
 g + geom_bar(aes(weight=steps)) +
   labs(x = "Day Number", y = "Number of Steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
 mean(stepsByDay$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 
 ## What is the average daily activity pattern?
-```{r}
-avgDailyActivity <- aggregate(steps ~ interval, data = activityData, FUN = mean)
 
-g <- ggplot(avgDailyActivity, aes(interval, steps))
-g + geom_line()
-
-avgDailyActivity[avgDailyActivity$steps == max(avgDailyActivity$steps), "interval"]
-```
 
 
 ## Imputing missing values
