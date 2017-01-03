@@ -21,10 +21,17 @@ library(ggplot2)
 g <- ggplot(stepsByDay, aes(day))
 g + geom_bar(aes(weight=steps)) +
   labs(x = "Day Number", y = "Number of Steps")
+```
 
+Mean number of steps taken per day 
+```{r}
 mean(stepsByDay$steps)
 ```
 
+Median number of steps taken per day 
+```{r}
+median(stepsByDay$steps)
+```
 
 ## What is the average daily activity pattern?
 ```{r}
@@ -32,13 +39,67 @@ avgDailyActivity <- aggregate(steps ~ interval, data = activityData, FUN = mean)
 
 g <- ggplot(avgDailyActivity, aes(interval, steps))
 g + geom_line()
+```
 
+Calculate the interval with the maximum average number of steps 
+```{r}
 avgDailyActivity[avgDailyActivity$steps == max(avgDailyActivity$steps), "interval"]
 ```
 
-
 ## Imputing missing values
+Calculate the total number of missing values in the dataset: 
+```{r}
+naData <- activityData[is.na(activityData$steps), ]
+nrow(naData)
+```
 
+Fill in the missing values in the data set. Use the average number of steps for each interval:
+```{r}
+for (i in 1:nrow(activityData)) {
+  if ( is.na(activityData[i, "steps"]) ) {
+    targetInt <- activityData[i, "interval"]
+    activityData[i, "steps"] <- avgDailyActivity[avgDailyActivity$interval == targetInt, "steps"]
+  }
+} 
 
+head(activityData)
+```
 
+Plot the new data:
+```{r}
+stepsByDay <- aggregate(steps ~ date, data = activityData, FUN = sum)
+stepsByDay$day <- 1:nrow(stepsByDay)
+
+g <- ggplot(stepsByDay, aes(day))
+g + geom_bar(aes(weight = steps)) + labs(x = "Day Number", y = "Number of Steps")
+```
+
+Calculate the new mean:
+```{r}
+mean(stepsByDay$steps)
+```
+
+```{r}
+median(stepsByDay$steps)
+```
 ## Are there differences in activity patterns between weekdays and weekends?
+Convert dates to Date object 
+```{r}
+activityData$date <- as.Date(activityData$date)
+```
+
+Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+```{r}
+activityData$dayType <- factor(weekdays(activityData$date) %in% c("Saturday", "Sunday"),
+                               labels=c("Weekday", "Weekend"))
+
+str(activityData)
+```
+
+Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+```{r}
+aggData <- aggregate(steps ~ interval + dayType, data = activityData, FUN = mean)
+
+g <- ggplot(aggData, aes(interval, steps))
+g + geom_line() + facet_grid(dayType ~ .)
+```
